@@ -76,7 +76,7 @@ app.post('/api/event-types', async (req: Request, res: Response) => {
 
 app.put('/api/event-types/:id', async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params as { id: string };
     const { name, duration, slug, description, bufferTime } = req.body;
     const eventType = await prisma.eventType.update({
         where: { id },
@@ -88,7 +88,7 @@ app.put('/api/event-types/:id', async (req: Request, res: Response) => {
 
 app.delete('/api/event-types/:id', async (req: Request, res: Response) => {
   try {
-    await prisma.eventType.delete({ where: { id: req.params.id } });
+    await prisma.eventType.delete({ where: { id: req.params.id as string } });
     res.json({ success: true });
   } catch (err: any) { res.status(400).json({error: err.message}); }
 });
@@ -128,7 +128,7 @@ app.get('/api/meetings', async (req: Request, res: Response) => {
 app.get('/api/meetings/:id', async (req: Request, res: Response) => {
     try {
       const meeting = await prisma.meeting.findUnique({
-          where: { id: req.params.id },
+          where: { id: req.params.id as string },
           include: { eventType: true }
       });
       res.json(meeting);
@@ -184,7 +184,7 @@ app.post('/api/meetings/:id/reschedule', async (req: Request, res: Response) => 
     try {
         const { startTime, endTime } = req.body;
         const oldMeeting = await prisma.meeting.findUnique({
-            where: { id: req.params.id },
+            where: { id: req.params.id as string },
             include: { eventType: true }
         });
         
@@ -225,7 +225,7 @@ app.post('/api/meetings/:id/reschedule', async (req: Request, res: Response) => 
 app.post('/api/meetings/:id/cancel', async (req: Request, res: Response) => {
   try {
     const meeting = await prisma.meeting.update({
-        where: { id: req.params.id },
+        where: { id: req.params.id as string },
         data: { status: 'canceled' }
     });
     res.json(meeting);
