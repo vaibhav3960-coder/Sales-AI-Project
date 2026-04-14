@@ -19,5 +19,5 @@ export const api = {
   rescheduleMeeting: (id: string, data: any) => fetch(`${API_BASE}/meetings/${id}/reschedule`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }).then(r => {
     if(!r.ok) { return r.json().then(e => {throw new Error(e.error)}) }
     return r.json();
-  })
+  }).catch(e => { console.error(e); throw e; })
 };
