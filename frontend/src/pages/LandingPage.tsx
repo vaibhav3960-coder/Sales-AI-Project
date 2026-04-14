@@ -12,10 +12,13 @@ export default function LandingPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header className="header justify-center">
+      <header className="header justify-between">
         <Link to="/" className="header-logo">
           <Calendar size={28} />
           John Doe
+        </Link>
+        <Link to="/dashboard" className="btn btn-outline">
+          Dashboard
         </Link>
       </header>
 
