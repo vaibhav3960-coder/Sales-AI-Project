@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import nodemailer from 'nodemailer';
@@ -12,7 +12,7 @@ app.use(express.json());
 
 // Set up Nodemailer with Ethereal (Fake SMTP)
 let transporter: nodemailer.Transporter;
-nodemailer.createTestAccount((err, account) => {
+nodemailer.createTestAccount((err: Error | null, account: nodemailer.TestAccount) => {
     if (err) {
         console.error('Failed to create a testing account. ' + err.message);
         return process.exit(1);
@@ -29,7 +29,7 @@ nodemailer.createTestAccount((err, account) => {
     console.log(`Nodemailer Ethereal Account Ready: ${account.user}`);
 });
 
-const sendBookingEmail = async (meeting: any, eventType: any, isReschedule = false) => {
+const sendBookingEmail = async (meeting: any, eventType: any, isReschedule: boolean = false) => {
     if(!transporter) return;
     
     // Generate rescheduling link
@@ -57,14 +57,14 @@ const sendBookingEmail = async (meeting: any, eventType: any, isReschedule = fal
 
 
 // Event Types Endpoints
-app.get('/api/event-types', async (req, res) => {
+app.get('/api/event-types', async (req: Request, res: Response) => {
   try {
     const eventTypes = await prisma.eventType.findMany();
     res.json(eventTypes);
   } catch (err: any) { res.status(500).json({error: err.message}); }
 });
 
-app.post('/api/event-types', async (req, res) => {
+app.post('/api/event-types', async (req: Request, res: Response) => {
   try {
     const { name, duration, slug, description, bufferTime } = req.body;
     const eventType = await prisma.eventType.create({
@@ -74,7 +74,7 @@ app.post('/api/event-types', async (req, res) => {
   } catch (err: any) { res.status(400).json({error: err.message}); }
 });
 
-app.put('/api/event-types/:id', async (req, res) => {
+app.put('/api/event-types/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name, duration, slug, description, bufferTime } = req.body;
@@ -86,7 +86,7 @@ app.put('/api/event-types/:id', async (req, res) => {
   } catch (err: any) { res.status(400).json({error: err.message}); }
 });
 
-app.delete('/api/event-types/:id', async (req, res) => {
+app.delete('/api/event-types/:id', async (req: Request, res: Response) => {
   try {
     await prisma.eventType.delete({ where: { id: req.params.id } });
     res.json({ success: true });
@@ -94,7 +94,7 @@ app.delete('/api/event-types/:id', async (req, res) => {
 });
 
 // Availability Endpoints
-app.get('/api/availability', async (req, res) => {
+app.get('/api/availability', async (req: Request, res: Response) => {
   try {
     const availability = await prisma.availability.findMany({
         orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }]
@@ -103,7 +103,7 @@ app.get('/api/availability', async (req, res) => {
   } catch (err: any) { res.status(500).json({error: err.message}); }
 });
 
-app.post('/api/availability', async (req, res) => {
+app.post('/api/availability', async (req: Request, res: Response) => {
   try {
     const { availabilities } = req.body; // Array of {dayOfWeek, startTime, endTime}
     await prisma.$transaction([
@@ -115,7 +115,7 @@ app.post('/api/availability', async (req, res) => {
 });
 
 // Meetings Endpoints
-app.get('/api/meetings', async (req, res) => {
+app.get('/api/meetings', async (req: Request, res: Response) => {
   try {
     const meetings = await prisma.meeting.findMany({
         include: { eventType: true },
@@ -125,7 +125,7 @@ app.get('/api/meetings', async (req, res) => {
   } catch (err: any) { res.status(400).json({error: err.message}); }
 });
 
-app.get('/api/meetings/:id', async (req, res) => {
+app.get('/api/meetings/:id', async (req: Request, res: Response) => {
     try {
       const meeting = await prisma.meeting.findUnique({
           where: { id: req.params.id },
@@ -135,7 +135,7 @@ app.get('/api/meetings/:id', async (req, res) => {
     } catch (err: any) { res.status(400).json({error: err.message}); }
 });
 
-app.post('/api/meetings', async (req, res) => {
+app.post('/api/meetings', async (req: Request, res: Response) => {
   try {
     const { eventTypeId, inviteeName, inviteeEmail, startTime, endTime } = req.body;
     
@@ -180,7 +180,7 @@ app.post('/api/meetings', async (req, res) => {
   } catch (err: any) { res.status(400).json({error: err.message}); }
 });
 
-app.post('/api/meetings/:id/reschedule', async (req, res) => {
+app.post('/api/meetings/:id/reschedule', async (req: Request, res: Response) => {
     try {
         const { startTime, endTime } = req.body;
         const oldMeeting = await prisma.meeting.findUnique({
@@ -222,7 +222,7 @@ app.post('/api/meetings/:id/reschedule', async (req, res) => {
     } catch(err: any) { res.status(400).json({error: err.message}); }
 });
 
-app.post('/api/meetings/:id/cancel', async (req, res) => {
+app.post('/api/meetings/:id/cancel', async (req: Request, res: Response) => {
   try {
     const meeting = await prisma.meeting.update({
         where: { id: req.params.id },
@@ -233,7 +233,7 @@ app.post('/api/meetings/:id/cancel', async (req, res) => {
 });
 
 // Seed data route for testing
-app.post('/api/seed', async (req, res) => {
+app.post('/api/seed', async (req: Request, res: Response) => {
     try {
         await prisma.eventType.deleteMany({});
         await prisma.availability.deleteMany({});
