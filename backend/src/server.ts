@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import nodemailer from 'nodemailer';
+import 'dotenv/config';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -32,7 +33,7 @@ const sendBookingEmail = async (meeting: any, eventType: any, isReschedule = fal
     if(!transporter) return;
     
     // Generate rescheduling link
-    const rescheduleLink = `http://localhost:5173/reschedule/${meeting.id}`;
+    const rescheduleLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reschedule/${meeting.id}`;
 
     let message = {
         from: 'Calendly Clone <noreply@calendlyclone.com>',
@@ -256,6 +257,7 @@ app.post('/api/seed', async (req, res) => {
     } catch(err: any) { res.status(400).json({error: err.message}); }
 });
 
-app.listen(3001, () => {
-  console.log('Backend server running on http://localhost:3001');
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Backend server running on port ${PORT}`);
 });
