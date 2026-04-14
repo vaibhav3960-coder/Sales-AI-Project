@@ -134,7 +134,7 @@ export default function Availability() {
                       </button>
                     )}
                   </div>
-                )) : (
+                ))) : (
                   <div className="text-gray" style={{ padding: '0.5rem 0' }}>Unavailable</div>
                 )}
               </div>
