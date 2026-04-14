@@ -207,7 +207,7 @@ export default function BookingPage() {
                           <div className="flex flex-col gap-2">
                              {slots.length === 0 ? (
                                <div className="text-gray text-sm">No times available</div>
-                             ) : slots.map(time => (
+                             ) : Array.isArray(slots) && slots.map(time => (
                                selectedTime === time ? (
                                  <div key={time} className="flex gap-2">
                                     <button className="time-slot selected" style={{ flex: 1, marginBottom: 0 }}>{time}</button>

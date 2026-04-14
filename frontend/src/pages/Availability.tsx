@@ -75,7 +75,7 @@ export default function Availability() {
         </div>
         
         <div className="flex flex-col">
-          {schedule.map((day, dIndex) => (
+          {Array.isArray(schedule) && schedule.map((day, dIndex) => (
             <div key={dIndex} className="flex items-start" style={{ padding: '1.25rem 0', borderBottom: dIndex < 6 ? '1px solid var(--border-color)' : 'none' }}>
               
               <div className="flex items-center" style={{ width: '150px' }}>
@@ -95,7 +95,7 @@ export default function Availability() {
               </div>
 
               <div className="flex-1 flex flex-col gap-3">
-                {day.enabled ? day.intervals.map((interval: any, iIndex: number) => (
+                {day.enabled ? (Array.isArray(day.intervals) && day.intervals.map((interval: any, iIndex: number) => (
                   <div key={iIndex} className="flex items-center gap-3">
                     <input 
                        type="time" 
