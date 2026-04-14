@@ -14,15 +14,19 @@ export default function EventTypes() {
 
   const handleCreateOrUpdate = async (e: any) => {
     e.preventDefault();
-    if(editingId) {
-        await api.updateEventType(editingId, formData);
-    } else {
-        await api.createEventType(formData);
+    try {
+        if(editingId) {
+            await api.updateEventType(editingId, formData);
+        } else {
+            await api.createEventType(formData);
+        }
+        setShowModal(false);
+        setEditingId(null);
+        setFormData({ name: '', duration: 30, slug: '', description: '', bufferTime: 0 });
+        loadEvents();
+    } catch (err: any) {
+        alert(err.message || 'Failed to save event type');
     }
-    setShowModal(false);
-    setEditingId(null);
-    setFormData({ name: '', duration: 30, slug: '', description: '', bufferTime: 0 });
-    loadEvents();
   };
 
   const handleDelete = async (id: string) => {

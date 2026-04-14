@@ -43,9 +43,14 @@ export default function Availability() {
       }
     });
 
-    await api.updateAvailability(availabilities);
-    setSaving(false);
-    alert('Availability saved successfully!');
+    try {
+        await api.updateAvailability(availabilities);
+        alert('Availability saved successfully!');
+    } catch (err: any) {
+        alert(err.message || 'Failed to save availability');
+    } finally {
+        setSaving(false);
+    }
   };
 
   if(!schedule.length) return <div>Loading...</div>;
