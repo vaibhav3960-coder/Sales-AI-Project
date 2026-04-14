@@ -29,7 +29,7 @@ export default function LandingPage() {
          </div>
 
          <div className="grid grid-cols-2">
-            {events.map((ev) => (
+            {Array.isArray(events) && events.map((ev) => (
               <Link to={`/book/${ev.slug}`} key={ev.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className="card hoverable flex items-center justify-between" style={{ padding: '1.5rem', borderLeft: '5px solid var(--primary-color)' }}>
                    <div>

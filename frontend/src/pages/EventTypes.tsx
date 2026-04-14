@@ -51,7 +51,7 @@ export default function EventTypes() {
       </div>
 
       <div className="grid grid-cols-3">
-        {events.map(ev => (
+        {Array.isArray(events) && events.map(ev => (
           <div key={ev.id} className="card hoverable flex flex-col justify-between" style={{ padding: 0, overflow: 'hidden', borderTop: '5px solid var(--primary-color)' }}>
             <div style={{ padding: '1.5rem' }}>
                <h3 className="text-xl font-bold mb-2">{ev.name}</h3>

@@ -45,7 +45,7 @@ export default function Meetings() {
            <div className="card text-center text-gray py-12">
               No {tab} meetings.
            </div>
-         ) : filtered.map(m => (
+         ) : Array.isArray(filtered) && filtered.map(m => (
            <div key={m.id} className="card flex items-center justify-between" style={{ opacity: m.status === 'canceled' ? 0.6 : 1 }}>
               <div className="flex gap-6 items-center">
                  <div style={{ width: '150px' }}>
