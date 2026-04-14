@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Link as LinkIcon, Calendar, Clock, List } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 
 export default function DashboardLayout() {
   const location = useLocation();

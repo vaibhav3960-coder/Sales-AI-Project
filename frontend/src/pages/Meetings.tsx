@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { format, isPast } from 'date-fns';
-import { Video, User, Clock, Ban } from 'lucide-react';
+import { User, Clock, Ban } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Meetings() {
