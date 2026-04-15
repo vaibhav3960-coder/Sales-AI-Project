@@ -23,10 +23,10 @@ export default function BookingPage() {
 
   useEffect(() => {
     Promise.all([
-      api.getEventTypes(),
-      api.getAvailability(),
-      api.getMeetings(),
-      api.getSettings()
+      api.getEventTypes().catch(() => []),
+      api.getAvailability().catch(() => []),
+      api.getMeetings().catch(() => []),
+      api.getSettings().catch(() => [])
     ]).then(([events, avail, meets, settings]) => {
       const ev = events.find((e: any) => e.slug === slug);
       if(ev) setEventType(ev);

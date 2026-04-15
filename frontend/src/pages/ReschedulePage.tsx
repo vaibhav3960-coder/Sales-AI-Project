@@ -23,10 +23,10 @@ export default function ReschedulePage() {
   useEffect(() => {
     if(!meetingId) return;
     Promise.all([
-      api.getMeeting(meetingId),
-      api.getAvailability(),
-      api.getMeetings(),
-      api.getSettings()
+      api.getMeeting(meetingId).catch(() => null),
+      api.getAvailability().catch(() => []),
+      api.getMeetings().catch(() => []),
+      api.getSettings().catch(() => [])
     ]).then(([m, avail, meets, settings]) => {
       setMeeting(m);
       setCurrentMonth(new Date(m.startTime));
