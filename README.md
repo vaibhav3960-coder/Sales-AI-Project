@@ -1,5 +1,7 @@
 # 📅 Calendly Clone - Fullstack Assignment
 
+**🌐 Live Demo:** [https://sales-ai-project.vercel.app](https://sales-ai-project.vercel.app)
+
 A professional-grade scheduling and booking application built for the Scaler SDE Intern Fullstack Assignment. This project replicates core Calendly functionality with a focus on **clean architecture**, **conflict-free scheduling**, and a **premium user experience**.
 
 ## ✨ Key Features
