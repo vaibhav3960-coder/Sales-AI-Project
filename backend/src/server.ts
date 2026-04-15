@@ -2,7 +2,16 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import nodemailer from 'nodemailer';
+import { execSync } from 'child_process';
 import 'dotenv/config';
+
+// Ensure the SQLite database schema is built when running on ephemeral environments (Render)
+try {
+  console.log('Running prisma db push to ensure schema exists...');
+  execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
+} catch (e) {
+  console.error('Failed to run prisma db push:', e);
+}
 
 const app = express();
 const prisma = new PrismaClient();
