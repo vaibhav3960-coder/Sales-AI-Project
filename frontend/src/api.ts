@@ -24,5 +24,6 @@ export const api = {
   getMeeting: (id: string) => fetch(`${API_BASE}/meetings/${id}`).then(handleResponse),
   cancelMeeting: (id: string) => fetch(`${API_BASE}/meetings/${id}/cancel`, { method: 'POST' }).then(handleResponse),
   bookMeeting: (data: any) => fetch(`${API_BASE}/meetings`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }).then(handleResponse),
-  rescheduleMeeting: (id: string, data: any) => fetch(`${API_BASE}/meetings/${id}/reschedule`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }).then(handleResponse)
+  rescheduleMeeting: (id: string, data: any) => fetch(`${API_BASE}/meetings/${id}/reschedule`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }).then(handleResponse),
+  seedDatabase: () => fetch(`${API_BASE}/seed`, { method: 'POST' }).then(handleResponse)
 };

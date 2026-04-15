@@ -27,7 +27,26 @@ export default function BookingPage() {
       api.getAvailability().catch(() => []),
       api.getMeetings().catch(() => []),
       api.getSettings().catch(() => [])
-    ]).then(([events, avail, meets, settings]) => {
+    ]).then(async ([events, avail, meets, settings]) => {
+      // Auto-heal empty ephemeral Database on Render
+      if (!avail || avail.length === 0) {
+        try {
+          await api.seedDatabase();
+          const [newEvents, newAvail, newMeets, newSettings] = await Promise.all([
+             api.getEventTypes().catch(() => []),
+             api.getAvailability().catch(() => []),
+             api.getMeetings().catch(() => []),
+             api.getSettings().catch(() => [])
+          ]);
+          events = newEvents;
+          avail = newAvail;
+          meets = newMeets;
+          settings = newSettings;
+        } catch (err) {
+          console.error("Auto-seed failed", err);
+        }
+      }
+
       const ev = events.find((e: any) => e.slug === slug);
       if(ev) setEventType(ev);
       setAvailability(avail);
