@@ -17,6 +17,9 @@ export const api = {
   getAvailability: () => fetch(`${API_BASE}/availability`).then(handleResponse),
   updateAvailability: (availabilities: any) => fetch(`${API_BASE}/availability`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ availabilities }) }).then(handleResponse),
   
+  getSettings: () => fetch(`${API_BASE}/settings`).then(handleResponse),
+  updateSettings: (settings: any) => fetch(`${API_BASE}/settings`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ settings }) }).then(handleResponse),
+  
   getMeetings: () => fetch(`${API_BASE}/meetings`).then(handleResponse),
   getMeeting: (id: string) => fetch(`${API_BASE}/meetings/${id}`).then(handleResponse),
   cancelMeeting: (id: string) => fetch(`${API_BASE}/meetings/${id}/cancel`, { method: 'POST' }).then(handleResponse),

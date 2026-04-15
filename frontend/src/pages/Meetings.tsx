@@ -53,9 +53,14 @@ export default function Meetings() {
                     <div className="text-gray">{format(new Date(m.startTime), 'h:mm a')} - {format(new Date(m.endTime), 'h:mm a')}</div>
                  </div>
                  <div style={{ width: '12px', height: '12px', background: m.status === 'canceled' ? 'var(--danger-color)' : 'var(--primary-color)', borderRadius: '50%' }}></div>
-                 <div>
+                 <div style={{ flex: 1 }}>
                     <div className="font-bold text-lg">{m.inviteeName}</div>
-                    <div className="text-gray flex items-center gap-2"><User size={14}/> {m.inviteeEmail}</div>
+                    <div className="text-gray flex items-center gap-2 mb-1"><User size={14}/> {m.inviteeEmail}</div>
+                    {m.customAnswer && (
+                       <div className="text-sm text-gray" style={{ background: '#f5f5f5', padding: '0.4rem 0.8rem', borderRadius: '4px', display: 'inline-block', marginTop: '0.2rem' }}>
+                          <span className="font-medium">Note:</span> {m.customAnswer}
+                       </div>
+                    )}
                  </div>
                  <div style={{ marginLeft: '2rem' }}>
                     <div className="font-medium">{m.eventType?.name}</div>

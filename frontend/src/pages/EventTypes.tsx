@@ -7,7 +7,7 @@ export default function EventTypes() {
   const [events, setEvents] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: '', duration: 30, slug: '', description: '', bufferTime: 0 });
+  const [formData, setFormData] = useState({ name: '', duration: 30, slug: '', description: '', bufferTime: 0, customQuestion: '' });
 
   const loadEvents = () => api.getEventTypes().then(setEvents);
   useEffect(() => { loadEvents(); }, []);
@@ -22,7 +22,7 @@ export default function EventTypes() {
         }
         setShowModal(false);
         setEditingId(null);
-        setFormData({ name: '', duration: 30, slug: '', description: '', bufferTime: 0 });
+        setFormData({ name: '', duration: 30, slug: '', description: '', bufferTime: 0, customQuestion: '' });
         loadEvents();
     } catch (err: any) {
         alert(err.message || 'Failed to save event type');
@@ -47,7 +47,7 @@ export default function EventTypes() {
         <h1 className="text-3xl font-bold">Event Types</h1>
         <button className="btn btn-primary" onClick={() => {
             setEditingId(null);
-            setFormData({ name: '', duration: 30, slug: '', description: '', bufferTime: 0 });
+            setFormData({ name: '', duration: 30, slug: '', description: '', bufferTime: 0, customQuestion: '' });
             setShowModal(true);
         }}>
           <Plus size={18} strokeWidth={2.5}/> New Event Type
@@ -73,7 +73,7 @@ export default function EventTypes() {
                 <div className="flex gap-2">
                    <button style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', padding: '0.5rem', borderRadius: '50%'}} onClick={() => {
                        setEditingId(ev.id);
-                       setFormData({ name: ev.name, duration: ev.duration, slug: ev.slug, description: ev.description || '', bufferTime: ev.bufferTime || 0 });
+                       setFormData({ name: ev.name, duration: ev.duration, slug: ev.slug, description: ev.description || '', bufferTime: ev.bufferTime || 0, customQuestion: ev.customQuestion || '' });
                        setShowModal(true);
                    }} title="Edit Event">
                       <Edit2 size={16} />
@@ -94,7 +94,7 @@ export default function EventTypes() {
 
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-          <div className="card" style={{ width: '450px' }}>
+          <div className="card" style={{ width: '450px', maxHeight: '90vh', overflowY: 'auto' }}>
              <h2 className="text-xl font-bold mb-4">{editingId ? 'Edit event type' : 'Add new event type'}</h2>
              <form onSubmit={handleCreateOrUpdate} className="flex flex-col gap-4">
                 <div>
@@ -123,6 +123,10 @@ export default function EventTypes() {
                 <div>
                    <label className="label">Description / Instructions</label>
                    <textarea className="input" rows={3} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Information invitee will see when booking..."></textarea>
+                </div>
+                <div>
+                   <label className="label">Ask Invitees a Custom Question (Optional)</label>
+                   <input className="input" value={formData.customQuestion} onChange={e => setFormData({...formData, customQuestion: e.target.value})} placeholder="e.g. What would you like to discuss?" />
                 </div>
                 <div className="flex justify-end gap-3 mt-4">
                    <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ background: '#f1f3f4', color: '#1a1a1a' }}>Cancel</button>

@@ -13,7 +13,10 @@ export default function Availability() {
   const timezones = Intl.supportedValuesOf('timeZone');
 
   useEffect(() => {
-    api.getAvailability().then(data => {
+    Promise.all([
+      api.getAvailability(),
+      api.getSettings()
+    ]).then(([data, settingsData]) => {
       // Group by day
       const grouped = DAYS.map((_, index) => {
         const intervals = data.filter((d: any) => d.dayOfWeek === index);
@@ -24,6 +27,11 @@ export default function Availability() {
         };
       });
       setSchedule(grouped);
+
+      const tzSetting = settingsData.find((s: any) => s.key === 'timezone');
+      if(tzSetting) {
+        setTimezone(tzSetting.value);
+      }
     });
   }, []);
 
@@ -44,8 +52,11 @@ export default function Availability() {
     });
 
     try {
-        await api.updateAvailability(availabilities);
-        alert('Availability saved successfully!');
+        await Promise.all([
+          api.updateAvailability(availabilities),
+          api.updateSettings([{ key: 'timezone', value: timezone }])
+        ]);
+        alert('Availability and Timezone saved successfully!');
     } catch (err: any) {
         alert(err.message || 'Failed to save availability');
     } finally {

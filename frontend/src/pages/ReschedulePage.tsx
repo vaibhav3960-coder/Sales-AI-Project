@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, isPast, parse, addMinutes, subMonths, addMonths } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
 import { Clock, ArrowLeft, ArrowRight, Globe, Video, Calendar as Cal } from 'lucide-react';
 
 export default function ReschedulePage() {
@@ -16,6 +17,7 @@ export default function ReschedulePage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   
+  const [hostTimezone, setHostTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [rescheduling, setRescheduling] = useState(false);
 
   useEffect(() => {
@@ -23,56 +25,72 @@ export default function ReschedulePage() {
     Promise.all([
       api.getMeeting(meetingId),
       api.getAvailability(),
-      api.getMeetings()
-    ]).then(([m, avail, meets]) => {
+      api.getMeetings(),
+      api.getSettings()
+    ]).then(([m, avail, meets, settings]) => {
       setMeeting(m);
       setCurrentMonth(new Date(m.startTime));
       setAvailability(avail);
       setMeetings(meets);
+      const tzSetting = settings.find((s: any) => s.key === 'timezone');
+      if(tzSetting) setHostTimezone(tzSetting.value);
     });
   }, [meetingId]);
 
   const generateTimeSlots = (date: Date) => {
     if(!meeting) return [];
     
-    const dayOfWeek = date.getDay();
-    const dayAvails = availability.filter(a => a.dayOfWeek === dayOfWeek);
-    if(dayAvails.length === 0) return [];
-    
     const slots: string[] = [];
     const eventType = meeting.eventType;
     const duration = eventType.duration;
     const buffer = eventType.bufferTime || 0;
     
-    dayAvails.forEach(avail => {
-      const startTime = parse(avail.startTime, 'HH:mm', date);
-      const endTime = parse(avail.endTime, 'HH:mm', date);
+    const daysToCheck = [addDays(date, -1), date, addDays(date, 1)];
+
+    daysToCheck.forEach(hostDate => {
+      const dayOfWeek = hostDate.getDay();
+      const dateStringStr = format(hostDate, 'yyyy-MM-dd');
+
+      const dayAvails = availability.filter(a => a.dayOfWeek === dayOfWeek);
       
-      let curr = startTime;
-      while(addMinutes(curr, duration) <= endTime) {
-         if(!isPast(curr)) {
-            const currEnd = addMinutes(curr, duration);
-            
-            // Check overlaps ensuring we apply proper buffer and EXCLUDE current meeting
-            const isBooked = meetings.some(m => {
-                if (m.status === 'canceled') return false;
-                if (m.id === meetingId) return false; // Ignore current meeting being moved
-                const mStart = new Date(m.startTime);
-                const mEnd = new Date(m.endTime);
-                
-                // Add buffer to requested curr slot
-                const rStart = addMinutes(curr, -buffer);
-                const rEnd = addMinutes(currEnd, buffer);
-                
-                return (rStart < mEnd && rEnd > mStart);
-            });
-            
-            if(!isBooked) {
-                slots.push(format(curr, 'HH:mm'));
-            }
-         }
-         curr = addMinutes(curr, 30);
-      }
+      dayAvails.forEach(avail => {
+        let currTimeStr = avail.startTime; 
+        
+        const endTimeParts = avail.endTime.split(':');
+        const endMinutesTotal = parseInt(endTimeParts[0])*60 + parseInt(endTimeParts[1]);
+        
+        let currMinutesTotal = parseInt(currTimeStr.split(':')[0])*60 + parseInt(currTimeStr.split(':')[1]);
+        
+        while(currMinutesTotal + duration <= endMinutesTotal) {
+           const hh = String(Math.floor(currMinutesTotal / 60)).padStart(2, '0');
+           const mm = String(currMinutesTotal % 60).padStart(2, '0');
+           
+           const pseudoIso = `${dateStringStr}T${hh}:${mm}:00`;
+           const realDate = fromZonedTime(pseudoIso, hostTimezone);
+           
+           if(isSameDay(realDate, date) && !isPast(realDate)) {
+              const endRealDateInt = realDate.getTime() + duration * 60000;
+              
+              const isBooked = meetings.some(m => {
+                  if (m.status === 'canceled') return false;
+                  if (m.id === meetingId) return false;
+                  
+                  const mStart = new Date(m.startTime).getTime();
+                  const mEnd = new Date(m.endTime).getTime();
+                  
+                  const rStart = realDate.getTime() - buffer * 60000;
+                  const rEnd = endRealDateInt + buffer * 60000;
+                  
+                  return (rStart < mEnd && rEnd > mStart);
+              });
+              
+              if(!isBooked) {
+                  slots.push(format(realDate, 'HH:mm'));
+              }
+           }
+           currMinutesTotal += 30;
+        }
+      });
     });
 
     return Array.from(new Set(slots)).sort();

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../api';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, isPast, parse, addMinutes, subMonths, addMonths } from 'date-fns';
+import { fromZonedTime } from 'date-fns-tz';
 import { Clock, ArrowLeft, ArrowRight, Globe, Video, Calendar as Cal } from 'lucide-react';
 
 export default function BookingPage() {
@@ -15,7 +16,8 @@ export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   
-  const [formData, setFormData] = useState({ name: '', email: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', customAnswer: '' });
+  const [hostTimezone, setHostTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [booking, setBooking] = useState(false);
   const [step, setStep] = useState(1);
 
@@ -23,52 +25,69 @@ export default function BookingPage() {
     Promise.all([
       api.getEventTypes(),
       api.getAvailability(),
-      api.getMeetings()
-    ]).then(([events, avail, meets]) => {
+      api.getMeetings(),
+      api.getSettings()
+    ]).then(([events, avail, meets, settings]) => {
       const ev = events.find((e: any) => e.slug === slug);
       if(ev) setEventType(ev);
       setAvailability(avail);
       setMeetings(meets);
+      const tzSetting = settings.find((s: any) => s.key === 'timezone');
+      if(tzSetting) setHostTimezone(tzSetting.value);
     });
   }, [slug]);
 
   const generateTimeSlots = (date: Date) => {
     if(!eventType) return [];
     
-    const dayOfWeek = date.getDay();
-    const dayAvails = availability.filter(a => a.dayOfWeek === dayOfWeek);
-    if(dayAvails.length === 0) return [];
-    
     const slots: string[] = [];
     const duration = eventType.duration;
     const buffer = eventType.bufferTime || 0;
     
-    dayAvails.forEach(avail => {
-      const startTime = parse(avail.startTime, 'HH:mm', date);
-      const endTime = parse(avail.endTime, 'HH:mm', date);
+    const daysToCheck = [addDays(date, -1), date, addDays(date, 1)];
+
+    daysToCheck.forEach(hostDate => {
+      const dayOfWeek = hostDate.getDay();
+      const dateStringStr = format(hostDate, 'yyyy-MM-dd');
+
+      const dayAvails = availability.filter(a => a.dayOfWeek === dayOfWeek);
       
-      let curr = startTime;
-      while(addMinutes(curr, duration) <= endTime) {
-         if(!isPast(curr)) {
-            const currEnd = addMinutes(curr, duration);
-            const isBooked = meetings.some(m => {
-                if (m.status === 'canceled') return false;
-                const mStart = new Date(m.startTime);
-                const mEnd = new Date(m.endTime);
-                
-                // Add buffer to requested curr slot
-                const rStart = addMinutes(curr, -buffer);
-                const rEnd = addMinutes(currEnd, buffer);
-                
-                return (rStart < mEnd && rEnd > mStart);
-            });
-            
-            if(!isBooked) {
-                slots.push(format(curr, 'HH:mm'));
-            }
-         }
-         curr = addMinutes(curr, 30); // 30-min intervals
-      }
+      dayAvails.forEach(avail => {
+        let currTimeStr = avail.startTime; 
+        
+        const endTimeParts = avail.endTime.split(':');
+        const endMinutesTotal = parseInt(endTimeParts[0])*60 + parseInt(endTimeParts[1]);
+        
+        let currMinutesTotal = parseInt(currTimeStr.split(':')[0])*60 + parseInt(currTimeStr.split(':')[1]);
+        
+        while(currMinutesTotal + duration <= endMinutesTotal) {
+           const hh = String(Math.floor(currMinutesTotal / 60)).padStart(2, '0');
+           const mm = String(currMinutesTotal % 60).padStart(2, '0');
+           
+           const pseudoIso = `${dateStringStr}T${hh}:${mm}:00`;
+           const realDate = fromZonedTime(pseudoIso, hostTimezone);
+           
+           if(isSameDay(realDate, date) && !isPast(realDate)) {
+              const endRealDateInt = realDate.getTime() + duration * 60000;
+              
+              const isBooked = meetings.some(m => {
+                  if (m.status === 'canceled') return false;
+                  const mStart = new Date(m.startTime).getTime();
+                  const mEnd = new Date(m.endTime).getTime();
+                  
+                  const rStart = realDate.getTime() - buffer * 60000;
+                  const rEnd = endRealDateInt + buffer * 60000;
+                  
+                  return (rStart < mEnd && rEnd > mStart);
+              });
+              
+              if(!isBooked) {
+                  slots.push(format(realDate, 'HH:mm'));
+              }
+           }
+           currMinutesTotal += 30;
+        }
+      });
     });
 
     return Array.from(new Set(slots)).sort();
@@ -132,6 +151,7 @@ export default function BookingPage() {
           eventTypeId: eventType.id,
           inviteeName: formData.name,
           inviteeEmail: formData.email,
+          customAnswer: formData.customAnswer,
           startTime: start.toISOString(),
           endTime: end.toISOString()
        });
@@ -233,6 +253,12 @@ export default function BookingPage() {
                            <label className="label">Email *</label>
                            <input required type="email" className="input" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                         </div>
+                        {eventType.customQuestion && (
+                          <div>
+                             <label className="label">{eventType.customQuestion}</label>
+                             <textarea className="input" rows={3} value={formData.customAnswer} onChange={e => setFormData({...formData, customAnswer: e.target.value})}></textarea>
+                          </div>
+                        )}
                         <div className="mt-4">
                            <button type="submit" className="btn btn-primary" disabled={booking} style={{ padding: '0.8rem 2rem' }}>
                               {booking ? 'Scheduling...' : 'Schedule Event'}

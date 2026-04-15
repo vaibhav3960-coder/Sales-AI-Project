@@ -75,9 +75,9 @@ app.get('/api/event-types', async (req: Request, res: Response) => {
 
 app.post('/api/event-types', async (req: Request, res: Response) => {
   try {
-    const { name, duration, slug, description, bufferTime } = req.body;
+    const { name, duration, slug, description, bufferTime, customQuestion } = req.body;
     const eventType = await prisma.eventType.create({
-        data: { name, duration, slug, description, bufferTime: bufferTime || 0 }
+        data: { name, duration, slug, description, bufferTime: bufferTime || 0, customQuestion: customQuestion || null }
     });
     res.json(eventType);
   } catch (err: any) { res.status(400).json({error: err.message}); }
@@ -86,10 +86,10 @@ app.post('/api/event-types', async (req: Request, res: Response) => {
 app.put('/api/event-types/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params as { id: string };
-    const { name, duration, slug, description, bufferTime } = req.body;
+    const { name, duration, slug, description, bufferTime, customQuestion } = req.body;
     const eventType = await prisma.eventType.update({
         where: { id },
-        data: { name, duration, slug, description, bufferTime: bufferTime || 0 }
+        data: { name, duration, slug, description, bufferTime: bufferTime || 0, customQuestion: customQuestion || null }
     });
     res.json(eventType);
   } catch (err: any) { res.status(400).json({error: err.message}); }
@@ -110,6 +110,28 @@ app.get('/api/availability', async (req: Request, res: Response) => {
     });
     res.json(availability);
   } catch (err: any) { res.status(500).json({error: err.message}); }
+});
+
+// Settings Endpoints
+app.get('/api/settings', async (req: Request, res: Response) => {
+  try {
+    const settings = await prisma.setting.findMany();
+    res.json(settings);
+  } catch (err: any) { res.status(500).json({error: err.message}); }
+});
+
+app.post('/api/settings', async (req: Request, res: Response) => {
+  try {
+    const { settings } = req.body; // Array of { key, value }
+    for (const setting of settings) {
+      await prisma.setting.upsert({
+        where: { key: setting.key },
+        update: { value: setting.value },
+        create: { key: setting.key, value: setting.value }
+      });
+    }
+    res.json({ success: true });
+  } catch (err: any) { res.status(400).json({error: err.message}); }
 });
 
 app.post('/api/availability', async (req: Request, res: Response) => {
@@ -146,7 +168,7 @@ app.get('/api/meetings/:id', async (req: Request, res: Response) => {
 
 app.post('/api/meetings', async (req: Request, res: Response) => {
   try {
-    const { eventTypeId, inviteeName, inviteeEmail, startTime, endTime } = req.body;
+    const { eventTypeId, inviteeName, inviteeEmail, customAnswer, startTime, endTime } = req.body;
     
     // Check overlap with buffer
     const eventType = await prisma.eventType.findUnique({ where: { id: eventTypeId }});
@@ -177,6 +199,7 @@ app.post('/api/meetings', async (req: Request, res: Response) => {
             eventTypeId, 
             inviteeName, 
             inviteeEmail, 
+            customAnswer: customAnswer || null,
             startTime: new Date(startTime), 
             endTime: new Date(endTime) 
         }

@@ -8,15 +8,16 @@ datasource db {
 }
 
 model EventType {
-  id          String   @id @default(uuid())
-  name        String
-  duration    Int      // in minutes
-  slug        String   @unique
-  description String?
-  bufferTime  Int      @default(0) // in minutes
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  meetings    Meeting[]
+  id             String    @id @default(uuid())
+  name           String
+  duration       Int       // in minutes
+  slug           String    @unique
+  description    String?
+  bufferTime     Int       @default(0) // in minutes
+  customQuestion String?   // optional question for invitee
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  meetings       Meeting[]
 }
 
 model Availability {
@@ -36,9 +37,18 @@ model Meeting {
   eventType    EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
   inviteeName  String
   inviteeEmail String
+  customAnswer String?   // invitee's answer to the custom question
   startTime    DateTime
   endTime      DateTime
   status       String    @default("booked") // "booked" or "canceled"
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
