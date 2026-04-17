@@ -7,7 +7,22 @@ export default function LandingPage() {
   const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
-    api.getEventTypes().then(setEvents);
+    api.getEventTypes()
+      .then(async (data) => {
+        // Auto-heal: if DB is empty (e.g. Render ephemeral reset), seed it
+        if (!data || data.length === 0) {
+          try {
+            await api.seedDatabase();
+            const seeded = await api.getEventTypes().catch(() => []);
+            setEvents(Array.isArray(seeded) ? seeded : []);
+          } catch {
+            setEvents([]);
+          }
+        } else {
+          setEvents(Array.isArray(data) ? data : []);
+        }
+      })
+      .catch(() => setEvents([]));
   }, []);
 
   return (
