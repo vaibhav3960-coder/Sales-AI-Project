@@ -6,12 +6,8 @@ import { execSync } from 'child_process';
 import 'dotenv/config';
 
 // Ensure the SQLite database schema is built when running on ephemeral environments (Render)
-try {
-  console.log('Running prisma db push to ensure schema exists...');
-  execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
-} catch (e) {
-  console.error('Failed to run prisma db push:', e);
-}
+// Removed destructive db push for prod. Run `npx prisma db push` or `migrate` manually in prod setup.
+// Ensure DATABASE_URL is set.
 
 const app = express();
 const prisma = new PrismaClient();

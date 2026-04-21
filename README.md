@@ -29,29 +29,31 @@ A professional-grade scheduling and booking application built for the Scaler SDE
 ## 🛠️ Getting Started
 
 ### Prerequisites
-- Node.js (v16.x or later)
+- Node.js (v18.x or later)
 - npm or yarn
 
-### 1. Setup Backend
+### 🚀 One-Command Setup (Recommended)
+From project root:
 ```bash
-cd backend
-npm install
-# Push the schema and initialize SQLite database
-npx prisma db push
-# Seed with default event types and 9-5 availability
-npm run seed
-# Start the server
-npx ts-node src/server.ts
+npm install          # Installs everything (frontend, backend, root concurrently)
+npm run db:push      # Initialize database
+npm run seed         # Add sample data (or POST to /api/seed after npm run dev)
+npm run dev          # 🔥 Starts BOTH servers automatically!
 ```
-*The API will be available at `http://localhost:3001`.*
 
-### 2. Setup Frontend
-```bash
-cd frontend
-npm install
-npm run dev
+**Frontend**: http://localhost:5173  
+**Backend API**: http://localhost:3001
+
+### Manual Setup (Legacy)
 ```
-*The app will be available at `http://localhost:5173`.*
+# Backend
+cd backend && npm install && npx prisma db push && npm run dev
+
+# Frontend (new terminal)
+cd frontend && npm install && npm run dev
+```
+
+**Now works with single `npm run dev` from root directory!**
 
 ## 📂 Architecture Overview
 
