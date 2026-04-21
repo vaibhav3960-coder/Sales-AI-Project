@@ -1,6 +1,6 @@
 # 📅 Calendly Clone - Fullstack Assignment
 
-**🌐 Live Demo:** [https://sales-ai-project.vercel.app](https://sales-ai-project.vercel.app)
+**🌐 Live Demo:** [Frontend (Vercel)](https://sales-ai-project.vercel.app) | [Backend API (Render)](https://sales-ai-project.onrender.com)
 
 A professional-grade scheduling and booking application built for the Scaler SDE Intern Fullstack Assignment. This project replicates core Calendly functionality with a focus on **clean architecture**, **conflict-free scheduling**, and a **premium user experience**.
 
@@ -41,8 +41,8 @@ npm run seed         # Add sample data (or POST to /api/seed after npm run dev)
 npm run dev          # 🔥 Starts BOTH servers automatically!
 ```
 
-**Frontend**: http://localhost:5173  
-**Backend API**: http://localhost:3001
+**Frontend (Vercel)**: https://sales-ai-project.vercel.app  
+**Backend API (Render)**: https://sales-ai-project.onrender.com
 
 ### Manual Setup (Legacy)
 ```
