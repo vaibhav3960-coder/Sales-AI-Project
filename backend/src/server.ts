@@ -6,7 +6,8 @@ import { execSync } from 'child_process';
 import 'dotenv/config';
 
 // Ensure the SQLite database schema is built when running on ephemeral environments (Render)
-// Removed destructive db push for prod. Run `npx prisma db push` or `migrate` manually in prod setup.
+// Prisma db push in package.json start for Render auto-setup
+
 // Ensure DATABASE_URL is set.
 
 const app = express();
