@@ -286,7 +286,20 @@ app.post('/api/seed', async (req: Request, res: Response) => {
     } catch(err: any) { res.status(400).json({error: err.message}); }
 });
 
+app.get('/keep-alive', (req: Request, res: Response) => {
+  res.send('Keep Alive');
+});
+
 const PORT = process.env.PORT || 3001;
+
+setInterval(() => {
+  // Use RENDER_EXTERNAL_URL if on Render, otherwise BACKEND_URL, or fallback to localhost
+  const backendUrl = process.env.RENDER_EXTERNAL_URL || process.env.BACKEND_URL || `http://localhost:${PORT}`;
+  fetch(`${backendUrl}/keep-alive`)
+    .then(() => console.log('Pinged self to stay alive'))
+    .catch((err) => console.error('Ping failed', err));
+}, 5 * 60 * 1000); // Ping every 5 minutes
+
 app.listen(PORT, () => {
   console.log(`Backend server running on port ${PORT}`);
 });
